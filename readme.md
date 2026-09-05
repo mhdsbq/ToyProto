@@ -1,6 +1,6 @@
 # ToyProto
 
-A simple toy implementation of protobuf in C# and for C#
+A simple toy implementation of protobuf in C# for C#
 
 ## Includes 
 - a simple code generator (ToyProto.Compiler) that generates c# code from a .proto file
@@ -13,9 +13,9 @@ A simple toy implementation of protobuf in C# and for C#
 ## Usage
 
 ### Command line tool
-toyproto compile <proto file> -o <output directory>
-toyproto encode <proto file> -i <input json file> -o <output binary file>
-toyproto decode <proto file> -i <input binary file> -o <output json file>
+- `toyproto compile <proto file> -o <output directory>`
+- `toyproto encode <proto file> -i <input json file> -o <output binary file>`
+- `toyproto decode <proto file> -i <input binary file> -o <output json file>`
 
 ### C# generated code
 ```csharp
