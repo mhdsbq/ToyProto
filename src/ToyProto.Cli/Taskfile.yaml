@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  pack:
+    desc: Pack the ToyProto CLI tool
+    run: always
+    cmds:
+      - 'dotnet pack ./ToyProto.Cli.csproj -c Release -o ./nupkg /p:Version=0.0.0-dev.$(date +%Y%m%d%H%M%S)'
+
+  install:
+    desc: Install the ToyProto CLI tool
+    deps:
+      - pack
+    cmds:
+      - dotnet tool update --global ToyProto.Cli --add-source ./nupkg --prerelease

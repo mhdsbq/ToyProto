@@ -1,2 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using System.CommandLine;
+using ToyProto.Cli.Commands;
+
+var rootCommand = new RootCommand("ToyProto cli")
+{
+    CompileCommand.Build()
+};
+
+rootCommand.Parse(args).Invoke();

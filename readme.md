@@ -32,3 +32,15 @@ var bytes = person.Encode();
 var decodedPerson = Person.Decode(bytes);
 Console.WriteLine(decodedPerson.Name); // Output: John Doe
 ```
+
+## Development
+
+### Prerequisites
+- .NET 10.0 SDK or later (NET 6.0 and above might work with change in csproj file)
+- `Taskfile` for building and running the project - see: https://taskfile.dev/docs/installation
+
+### Install cli 
+```bash
+task install-cli
+```
+- now you can run the cli tool with `toyproto` command

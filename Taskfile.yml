@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+includes:
+  cli:
+    taskfile: src/ToyProto.Cli/Taskfile.yaml
+    dir: src/ToyProto.Cli
