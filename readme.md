@@ -1,6 +1,6 @@
 # ToyProto
 
-A simple toy implementation of protobuf in C# for C#
+A simple toy implementation of [protobuf](https://protobuf.dev/) in C# for C#
 
 ## Includes 
 - a simple code generator (ToyProto.Compiler) that generates c# code from a .proto file
