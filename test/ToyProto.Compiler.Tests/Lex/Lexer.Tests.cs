@@ -76,6 +76,17 @@ public class LexerTests
         Assert.Equal(floatString, tokens.First().Value);
     }
 
+    [Theory]
+    [InlineData("3.1.")]
+    [InlineData("3.1e")]
+    [InlineData("3.")]
+    [InlineData("3e")]
+    public void LexingInvalidFloatingLiteralShouldThrowLexerException(string floatString)
+    {
+        var lexer = new Lexer();
+        Assert.Throws<LexerException>(() => lexer.Tokenize(floatString));
+    }
+
     [Fact]
     public void LexingTrueShouldReturnBoolLiteralToken()
     {

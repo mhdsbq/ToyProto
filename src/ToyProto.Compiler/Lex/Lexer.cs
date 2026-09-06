@@ -2,16 +2,18 @@ using System.Text;
 
 namespace ToyProto.Compiler.Lex;
 
+public interface ILexer
+{
+    List<Token> Tokenize(string input);
+}
+
 public class Lexer : ILexer
 {
-    private string _input = string.Empty;
-    private int _i;
+    private LexerCursor _cursor = default!;
 
     public List<Token> Tokenize(string input)
     {
-        _input = input;
-        _i = 0;
-
+        _cursor = new LexerCursor(input);
         return TokenizeInternal();
     }
 
@@ -19,11 +21,11 @@ public class Lexer : ILexer
     {
         var tokens = new List<Token>();
 
-        while (_i < _input.Length)
+        while (!_cursor.IsAtEnd)
         {
             SkipWhitespaceAndComments();
 
-            var c = _input[_i];
+            var c = _cursor.Peek();
 
             if (IsLetter(c))
             {
@@ -43,7 +45,7 @@ public class Lexer : ILexer
                 continue;
             }
 
-            throw new LexerException($"Unexpected character {c} in position {_i}");
+            throw new LexerException($"Unexpected character {c} in position {_cursor.Position}");
         }
 
         return tokens;
@@ -54,15 +56,10 @@ public class Lexer : ILexer
         // ref: https://protobuf.dev/reference/protobuf/proto3-spec/#identifiers
         // ident = letter { letter | decimalDigit | "_" }
 
-        var startIdx = _i;
-        while (++_i < _input.Length)
-        {
-            var c = _input[_i];
-            if (!IsLetter(c) && !IsDecimalDigit(c) && c is not '_')
-                break;
-        }
+        var start = _cursor.Position;
+        _cursor.AdvanceWhile((c) => IsLetter(c) || IsDecimalDigit(c) || c is '_');
 
-        var value = _input[startIdx.._i];
+        var value = _cursor.Slice(start);
 
         return value switch
         {
@@ -81,93 +78,51 @@ public class Lexer : ILexer
         // ref: https://protobuf.dev/reference/protobuf/proto3-spec/#integer_literals
         // ref: https://protobuf.dev/reference/protobuf/proto3-spec/#floating-point-literals
 
-        var startIdx = _i;
+        var start = _cursor.Position;
 
-        if (_input[_i] is '-')
-            _i++;
+        // negative symbol is accepted
+        _cursor.Match('-');
 
         // NOTE: Hex starts with 0(x|X) and doesn't allow decimals
-        if (_input[_i] is '0' && _i + 1 < _input.Length && _input[_i + 1] is 'x' or 'X')
+        if (_cursor.Match("0x") || _cursor.Match("0X"))
         {
-            _i++;
-            _i++;
-
-            while (_i < _input.Length)
-            {
-                var c = _input[_i];
-                if (!IsHexDigit(c))
-                    break;
-
-                _i++;
-            }
-
-            return new Token(TokenType.IntegerLiteral, _input[startIdx.._i]);
+            _cursor.AdvanceWhile(IsHexDigit);
+            return new Token(TokenType.IntegerLiteral, _cursor.Slice(start));
         }
 
-        while (_i < _input.Length)
+        _cursor.AdvanceWhile(IsDecimalDigit);
+        if (_cursor.IsAtEnd || _cursor.Peek() is not ('.' or 'e' or 'E'))
+            return new Token(TokenType.IntegerLiteral, _cursor.Slice(start));
+
+        // Continue with float literal parsing
+
+        // Decimal parsing
+        if (_cursor.Match('.'))
         {
-            var c = _input[_i];
+            // At least one decimal digit is required after a decimal (.)
+            if(_cursor.IsAtEnd)
+                throw new LexerException("At least one decimal digit is required after decimal symbol. Expected decimal digit found Eof!");
 
-            if (IsDecimalDigit(c) || IsOctalDigit(c))
-            {
-                _i++;
-                continue;
-            }
-
-            break;
+            _cursor.AdvanceWhile(IsDecimalDigit);
         }
 
-        if (_i >= _input.Length || _input[_i] is not ('.' or 'e' or 'E'))
+        if (_cursor.IsAtEnd)
+            return new Token(TokenType.FloatLiteral, _cursor.Slice(start));
+
+        // Exponential parsing
+        if (_cursor.Match('e') || _cursor.Match('E'))
         {
-            return new Token(TokenType.IntegerLiteral, _input[startIdx.._i]);
+            _cursor.Match('+');
+            _cursor.Match('-');
+
+            // There should be at least one decimal digit after Exponential symbol
+            if (_cursor.IsAtEnd || !IsDecimalDigit(_cursor.Peek()))
+                throw new LexerException($"Expected at least one decimal after exponential at position: {_cursor.Position}");
+
+            _cursor.AdvanceWhile(IsDecimalDigit);
         }
 
-        // Continue with float literal parsing. ie; decimals and exponential
-        if (_input[_i] is '.')
-        {
-            _i++;
-
-            while (_i < _input.Length)
-            {
-                var c = _input[_i];
-                if (IsDecimalDigit(c))
-                {
-                    _i++;
-                    continue;
-                }
-
-                break;
-            }
-        }
-
-
-        if (_i >= _input.Length)
-        {
-            return new Token(TokenType.FloatLiteral, _input[startIdx.._i]);
-        }
-
-        if (_input[_i] is 'e' or 'E')
-        {
-            _i++;
-
-            if (_i < _input.Length && _input[_i] is '+' or '-')
-                _i++;
-
-            // TODO: Enforce at least one decimal after exponential start => (e|E)([+] | [-]) {decimal digit} 
-            while (_i < _input.Length)
-            {
-                var c = _input[_i];
-                if (IsDecimalDigit(c))
-                {
-                    _i++;
-                    continue;
-                }
-
-                break;
-            }
-        }
-
-        return new Token(TokenType.FloatLiteral, _input[startIdx.._i]);
+        return new Token(TokenType.FloatLiteral, _cursor.Slice(start));
     }
 
 
@@ -176,10 +131,8 @@ public class Lexer : ILexer
         // ref: https://protobuf.dev/reference/protobuf/proto3-spec/#string_literals
         // strLit = strLitSingle { strLitSingle }
 
-        var c = _input[_i];
-
         var sb = new StringBuilder();
-        while (_i < _input.Length && IsQuote(c))
+        while (!_cursor.IsAtEnd && IsQuote(_cursor.Peek()))
         {
             sb.Append(ReadStringLiteralSingle());
             SkipWhitespaceAndComments();
@@ -193,16 +146,14 @@ public class Lexer : ILexer
         // ref: https://protobuf.dev/reference/protobuf/proto3-spec/#string_literals
         // strLitSingle = ( "'" { charValue } "'" ) |  ( '"' { charValue } '"' )
 
-        char quote = _input[_i];
-        _i++;
+        char quote = _cursor.Peek();
+        _cursor.Advance();
 
         var sb = new StringBuilder();
-        while (_i < _input.Length && _input[_i] != quote)
+        while (!_cursor.IsAtEnd && !_cursor.Match(quote))
         {
             sb.Append(ReadCharValue());
         }
-
-        _i++;
 
         return sb.ToString();
     }
@@ -214,13 +165,13 @@ public class Lexer : ILexer
 
         // NOTE: Only supporting non escaped char for now.
         // TODO: Implement reading escaped char
-        var c = _input[_i];
+        var c = _cursor.Peek();
         if (c is '\\')
         {
             throw new LexerException("Escape sequences are not supported yet.");
         }
 
-        _i++;
+        _cursor.Advance();
         return c;
     }
 
@@ -229,16 +180,7 @@ public class Lexer : ILexer
         // NOTE: Comments are not supported for now
         // TODO: Implement comments
 
-        while (_i < _input.Length)
-        {
-            if (IsWhitespace(_input[_i]))
-            {
-                _i++;
-                continue;
-            }
-
-            break;
-        }
+        _cursor.AdvanceWhile(IsWhitespace);
     }
 
     private bool IsWhitespace(char c)
@@ -263,8 +205,8 @@ public class Lexer : ILexer
 
     private bool IsHexDigit(char c)
     {
-        return IsDecimalDigit(c) 
-            || 'a' <= c && c <= 'f' 
+        return IsDecimalDigit(c)
+            || 'a' <= c && c <= 'f'
             || 'A' <= c && c <= 'F';
     }
 
