@@ -7,6 +7,7 @@ Compiler for a subset of proto 3 language.
 - Identifiers
 - Keywords (all reserved keywords are implemented)
 - String literals
+- Boolean literals
 
 ## Skipped features
 - Comments

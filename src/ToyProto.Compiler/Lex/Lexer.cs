@@ -27,7 +27,7 @@ public class Lexer : ILexer
 
             if (IsLetter(c))
             {
-                tokens.Add(ReadIdentifierOrKeywordToken());
+                tokens.Add(ReadWord());
                 continue;
             }
 
@@ -43,7 +43,7 @@ public class Lexer : ILexer
         return tokens;
     }
 
-    private Token ReadIdentifierOrKeywordToken()
+    private Token ReadWord()
     {
         // ref: https://protobuf.dev/reference/protobuf/proto3-spec/#identifiers
         // ident = letter { letter | decimalDigit | "_" }
@@ -56,10 +56,18 @@ public class Lexer : ILexer
                 break;
         }
 
-        var identifier = _input[startIdx.._i];
-        return Keyword.TryGetTokenType(identifier, out var keywordType)
-            ? new Token(keywordType)
-            : new Token(TokenType.Identifier, identifier);
+        var value = _input[startIdx.._i];
+
+        return value switch
+        {
+            "true" or "false" 
+                => new Token(TokenType.BoolLiteral, value),
+            
+            _ when Keyword.TryGetTokenType(value, out var keywordType) 
+                => new Token(keywordType),
+            
+            _   => new Token(TokenType.Identifier, value)
+        };
     }
 
     private Token ReadStringLiteral()
