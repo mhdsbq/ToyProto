@@ -9,6 +9,7 @@ interface ILexerCursor
     bool IsAtEnd {get;}
 
     char Peek(int offset = 0);
+    bool TryPeekAhead(int offset, out char c);
 
     void Advance();
     void AdvanceWhile(Func<char, bool> advanceCondition);
@@ -46,6 +47,20 @@ class LexerCursor : ILexerCursor
         
         return _input[index];
     }
+
+    public bool TryPeekAhead(int offset, out char c)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+        
+        c = '\0';
+
+        var index = _pos + offset;
+        if(index >= _len)
+            return false;
+        
+        c = _input[index];
+        return true;
+    }
     
     public void Advance()
     {
@@ -75,7 +90,7 @@ class LexerCursor : ILexerCursor
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(expected);
 
-        if(_pos + expected.Length >= _len)
+        if(_pos + expected.Length > _len)
             return false;
 
         if (!_input.AsSpan(_pos, expected.Length).SequenceEqual(expected.AsSpan()))

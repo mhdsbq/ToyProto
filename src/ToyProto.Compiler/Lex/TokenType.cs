@@ -35,6 +35,7 @@ public enum TokenType
     // Symbols
     Equals,         // =
     Semicolon,      // ;
+    Colon,          // :
     LeftBrace,      // {
     RightBrace,     // }
     LeftBracket,    // [

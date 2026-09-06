@@ -55,6 +55,7 @@ public class Lexer : ILexer
             throw new LexerException($"Unexpected character {c} in position {_cursor.Position}");
         }
 
+        // tokens.Add(new Token(TokenType.EndOfFile));
         return tokens;
     }
 
@@ -110,14 +111,18 @@ public class Lexer : ILexer
         if (_cursor.Match('.'))
         {
             // At least one decimal digit is required after a decimal (.)
-            if(_cursor.IsAtEnd)
-                throw new LexerException("At least one decimal digit is required after decimal symbol. Expected decimal digit found Eof!");
+            if (_cursor.IsAtEnd || !IsDecimalDigit(_cursor.Peek()))
+                throw new LexerException("At least one decimal digit is required after decimal symbol.");
 
             _cursor.AdvanceWhile(IsDecimalDigit);
         }
 
         if (_cursor.IsAtEnd)
             return new Token(TokenType.FloatLiteral, _cursor.Slice(start));
+
+        // Ensure there isn't a trailing decimal point
+        if (_cursor.Peek() == '.')
+            throw new LexerException("Unexpected trailing decimal point in float literal.");
 
         // Exponential parsing
         if (_cursor.Match('e') || _cursor.Match('E'))
@@ -227,7 +232,12 @@ public class Lexer : ILexer
 
     private bool IsNumberStart(char c)
     {
-        // NOTE: tokens starting with - is either integer or floating point literal
-        return IsDecimalDigit(c) || c is '-';
+        if (IsDecimalDigit(c))
+            return true;
+
+        if (c is '-' && _cursor.TryPeekAhead(1, out var next))
+            return IsDecimalDigit(next);
+
+        return false;
     }
 }

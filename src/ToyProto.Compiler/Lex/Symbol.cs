@@ -6,6 +6,7 @@ public static class Symbol
     {
         { '=', TokenType.Equals },
         { ';', TokenType.Semicolon },
+        { ':', TokenType.Colon},
         { '{', TokenType.LeftBrace },
         { '}', TokenType.RightBrace },
         { '[', TokenType.LeftBracket },
