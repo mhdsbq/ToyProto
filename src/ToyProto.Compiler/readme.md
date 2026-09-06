@@ -6,3 +6,8 @@ Compiler for a subset of proto 3 language.
 ## Lexical tokens implemented
 - Identifiers
 - Keywords (all reserved keywords are implemented)
+- String literals
+
+## Skipped features
+- Comments
+- Escaped characters in string literals

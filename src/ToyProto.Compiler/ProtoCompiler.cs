@@ -18,12 +18,12 @@ public class ProtoCompiler
 public class CompilationResult
 {
     public bool Success { get; set; }
-    public string Output { get; set; }
-    public string ErrorMessage { get; set; }
+    public string? Output { get; set; }
+    public string? ErrorMessage { get; set; }
 }
 
 public class ProtoFile
 {
-    public string FilePath { get; set; }
-    public string Content { get; set; }
+    public required string FilePath { get; set; }
+    public required string Content { get; set; }
 }
