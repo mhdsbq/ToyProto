@@ -4,4 +4,7 @@
     <Project Path="src/ToyProto.Compiler/ToyProto.Compiler.csproj" />
     <Project Path="src/ToyProto.Runtime/ToyProto.Runtime.csproj" />
   </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/ToyProto.Compiler.Tests/ToyProto.Compiler.Tests.csproj" />
+  </Folder>
 </Solution>
