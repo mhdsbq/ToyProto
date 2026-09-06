@@ -45,6 +45,13 @@ public class Lexer : ILexer
                 continue;
             }
 
+            if(Symbol.TryGetTokenType(c, out var tokenType))
+            {
+                tokens.Add(new Token(tokenType));
+                _cursor.Advance();
+                continue;
+            }
+
             throw new LexerException($"Unexpected character {c} in position {_cursor.Position}");
         }
 
