@@ -37,6 +37,12 @@ public class Lexer : ILexer
                 continue;
             }
 
+            if (IsNumberStart(c))
+            {
+                tokens.Add(ReadNumber());
+                continue;
+            }
+
             throw new LexerException($"Unexpected character {c} in position {_i}");
         }
 
@@ -60,15 +66,110 @@ public class Lexer : ILexer
 
         return value switch
         {
-            "true" or "false" 
+            "true" or "false"
                 => new Token(TokenType.BoolLiteral, value),
-            
-            _ when Keyword.TryGetTokenType(value, out var keywordType) 
+
+            _ when Keyword.TryGetTokenType(value, out var keywordType)
                 => new Token(keywordType),
-            
-            _   => new Token(TokenType.Identifier, value)
+
+            _ => new Token(TokenType.Identifier, value)
         };
     }
+
+    private Token ReadNumber()
+    {
+        // ref: https://protobuf.dev/reference/protobuf/proto3-spec/#integer_literals
+        // ref: https://protobuf.dev/reference/protobuf/proto3-spec/#floating-point-literals
+
+        var startIdx = _i;
+
+        if (_input[_i] is '-')
+            _i++;
+
+        // NOTE: Hex starts with 0(x|X) and doesn't allow decimals
+        if (_input[_i] is '0' && _i + 1 < _input.Length && _input[_i + 1] is 'x' or 'X')
+        {
+            _i++;
+            _i++;
+
+            while (_i < _input.Length)
+            {
+                var c = _input[_i];
+                if (!IsHexDigit(c))
+                    break;
+
+                _i++;
+            }
+
+            return new Token(TokenType.IntegerLiteral, _input[startIdx.._i]);
+        }
+
+        while (_i < _input.Length)
+        {
+            var c = _input[_i];
+
+            if (IsDecimalDigit(c) || IsOctalDigit(c))
+            {
+                _i++;
+                continue;
+            }
+
+            break;
+        }
+
+        if (_i >= _input.Length || _input[_i] is not ('.' or 'e' or 'E'))
+        {
+            return new Token(TokenType.IntegerLiteral, _input[startIdx.._i]);
+        }
+
+        // Continue with float literal parsing. ie; decimals and exponential
+        if (_input[_i] is '.')
+        {
+            _i++;
+
+            while (_i < _input.Length)
+            {
+                var c = _input[_i];
+                if (IsDecimalDigit(c))
+                {
+                    _i++;
+                    continue;
+                }
+
+                break;
+            }
+        }
+
+
+        if (_i >= _input.Length)
+        {
+            return new Token(TokenType.FloatLiteral, _input[startIdx.._i]);
+        }
+
+        if (_input[_i] is 'e' or 'E')
+        {
+            _i++;
+
+            if (_i < _input.Length && _input[_i] is '+' or '-')
+                _i++;
+
+            // TODO: Enforce at least one decimal after exponential start => (e|E)([+] | [-]) {decimal digit} 
+            while (_i < _input.Length)
+            {
+                var c = _input[_i];
+                if (IsDecimalDigit(c))
+                {
+                    _i++;
+                    continue;
+                }
+
+                break;
+            }
+        }
+
+        return new Token(TokenType.FloatLiteral, _input[startIdx.._i]);
+    }
+
 
     private Token ReadStringLiteral()
     {
@@ -155,8 +256,26 @@ public class Lexer : ILexer
         return '0' <= c && c <= '9';
     }
 
+    private bool IsOctalDigit(char c)
+    {
+        return '0' <= c && c <= '7';
+    }
+
+    private bool IsHexDigit(char c)
+    {
+        return IsDecimalDigit(c) 
+            || 'a' <= c && c <= 'f' 
+            || 'A' <= c && c <= 'F';
+    }
+
     private bool IsQuote(char c)
     {
         return c is '\'' or '"';
+    }
+
+    private bool IsNumberStart(char c)
+    {
+        // NOTE: tokens starting with - is either integer or floating point literal
+        return IsDecimalDigit(c) || c is '-';
     }
 }

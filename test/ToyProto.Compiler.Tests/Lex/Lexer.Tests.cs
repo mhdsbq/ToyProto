@@ -46,6 +46,37 @@ public class LexerTests
     }
 
     [Fact]
+    public void LexingIntegerLiteralShouldReturnIntegerLiteralToken()
+    {
+        var lexer = new Lexer();
+        var proto = """
+        123
+        """;
+
+        var tokens = lexer.Tokenize(proto);
+        Assert.Single(tokens);
+        Assert.Equal(TokenType.IntegerLiteral, tokens.First().Type);
+        Assert.Equal("123", tokens.First().Value);
+    }
+
+    [Theory]
+    [InlineData("3.14")]
+    [InlineData("1e10")]
+    [InlineData("3.14e10")]
+    [InlineData("3.14e0")]
+    [InlineData("3.14e-10")]
+    public void LexingFloatLiteralShouldReturnFloatLiteralToken(string floatString)
+    {
+        var lexer = new Lexer();
+
+        var tokens = lexer.Tokenize(floatString);
+
+        Assert.Single(tokens);
+        Assert.Equal(TokenType.FloatLiteral, tokens.First().Type);
+        Assert.Equal(floatString, tokens.First().Value);
+    }
+
+    [Fact]
     public void LexingTrueShouldReturnBoolLiteralToken()
     {
         var lexer = new Lexer();
