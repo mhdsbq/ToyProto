@@ -25,6 +25,9 @@ public class Lexer : ILexer
         {
             SkipWhitespaceAndComments();
 
+            if (_cursor.IsAtEnd)
+                break;
+
             var c = _cursor.Peek();
 
             if (IsLetter(c))
@@ -55,7 +58,7 @@ public class Lexer : ILexer
             throw new LexerException($"Unexpected character {c} in position {_cursor.Position}");
         }
 
-        // tokens.Add(new Token(TokenType.EndOfFile));
+        tokens.Add(new Token(TokenType.EndOfFile));
         return tokens;
     }
 

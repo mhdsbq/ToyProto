@@ -30,9 +30,10 @@ public class LexerTests
 
         var tokens = lexer.Tokenize(input);
 
-        var token = Assert.Single(tokens);
-        Assert.Equal(expectedType, token.Type);
-        Assert.Null(token.Value);
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(expectedType, tokens.First().Type);
+        Assert.Null(tokens.First().Value);
+        Assert.Equal(TokenType.EndOfFile, tokens.Last().Type);
     }
 
     [Theory]
@@ -45,9 +46,10 @@ public class LexerTests
 
         var tokens = lexer.Tokenize(input);
 
-        var token = Assert.Single(tokens);
-        Assert.Equal(TokenType.Identifier, token.Type);
-        Assert.Equal(expectedValue, token.Value);
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(TokenType.Identifier, tokens.First().Type);
+        Assert.Equal(expectedValue, tokens.First().Value);
+        Assert.Equal(TokenType.EndOfFile, tokens.Last().Type);
     }
 
     [Theory]
@@ -63,9 +65,10 @@ public class LexerTests
 
         var tokens = lexer.Tokenize(input);
 
-        var token = Assert.Single(tokens);
-        Assert.Equal(TokenType.IntegerLiteral, token.Type);
-        Assert.Equal(expectedValue, token.Value);
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(TokenType.IntegerLiteral, tokens.First().Type);
+        Assert.Equal(expectedValue, tokens.First().Value);
+        Assert.Equal(TokenType.EndOfFile, tokens.Last().Type);
     }
 
     [Theory]
@@ -83,9 +86,10 @@ public class LexerTests
 
         var tokens = lexer.Tokenize(input);
 
-        var token = Assert.Single(tokens);
-        Assert.Equal(TokenType.FloatLiteral, token.Type);
-        Assert.Equal(expectedValue, token.Value);
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(TokenType.FloatLiteral, tokens.First().Type);
+        Assert.Equal(expectedValue, tokens.First().Value);
+        Assert.Equal(TokenType.EndOfFile, tokens.Last().Type);
     }
 
     [Theory]
@@ -113,9 +117,10 @@ public class LexerTests
 
         var tokens = lexer.Tokenize(input);
 
-        var token = Assert.Single(tokens);
-        Assert.Equal(TokenType.StringLiteral, token.Type);
-        Assert.Equal(expectedValue, token.Value);
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(TokenType.StringLiteral, tokens.First().Type);
+        Assert.Equal(expectedValue, tokens.First().Value);
+        Assert.Equal(TokenType.EndOfFile, tokens.Last().Type);
     }
 
     [Theory]
@@ -127,9 +132,10 @@ public class LexerTests
 
         var tokens = lexer.Tokenize(input);
 
-        var token = Assert.Single(tokens);
-        Assert.Equal(TokenType.BoolLiteral, token.Type);
-        Assert.Equal(expectedValue, token.Value);
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(TokenType.BoolLiteral, tokens.First().Type);
+        Assert.Equal(expectedValue, tokens.First().Value);
+        Assert.Equal(TokenType.EndOfFile, tokens.Last().Type);
     }
 
     [Theory]
@@ -153,9 +159,10 @@ public class LexerTests
 
         var tokens = lexer.Tokenize(input);
 
-        var token = Assert.Single(tokens);
-        Assert.Equal(expectedType, token.Type);
-        Assert.Null(token.Value);
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(expectedType, tokens.First().Type);
+        Assert.Null(tokens.First().Value);
+        Assert.Equal(TokenType.EndOfFile, tokens.Last().Type);
     }
 
     [Theory]
