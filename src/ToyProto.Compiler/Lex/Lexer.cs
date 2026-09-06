@@ -66,6 +66,9 @@ public class Lexer : ILexer
             "true" or "false"
                 => new Token(TokenType.BoolLiteral, value),
 
+            "inf" or "nan"
+                => new Token(TokenType.FloatLiteral, value),
+
             _ when Keyword.TryGetTokenType(value, out var keywordType)
                 => new Token(keywordType),
 
