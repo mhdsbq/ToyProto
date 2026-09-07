@@ -13,6 +13,8 @@ internal interface IParserCursor
     void Advance();
     void AdvanceWhile(Func<Token, bool> advanceCondition);
 
+    bool Check(TokenType expected);
+
     bool Match(TokenType expected);
     bool Match(TokenType expected, out Token value);
 }
@@ -73,6 +75,14 @@ internal class ParserCursor : IParserCursor
 
         while (!IsAtEnd && advanceCondition(Peek()))
             Advance();
+    }
+
+    public bool Check(TokenType expected)
+    {
+        if (IsAtEnd)
+            return false;
+
+        return Peek().Type == expected;
     }
 
     public bool Match(TokenType expected)

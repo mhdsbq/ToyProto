@@ -54,8 +54,10 @@ internal class Parser : IParser
         Expect(TokenType.LeftBrace);
 
         var fields = new List<FieldDeclaration>();
-        while (!_cursor.IsAtEnd && !_cursor.Match(TokenType.RightBrace))
+        while (!_cursor.IsAtEnd && !_cursor.Check(TokenType.RightBrace))
             fields.Add(ParseField());
+
+        Expect(TokenType.RightBrace);
 
         return new MessageDeclaration(name.Value!, fields);
     }
