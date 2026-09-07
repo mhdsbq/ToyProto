@@ -48,7 +48,7 @@ public class Lexer : ILexer
                 continue;
             }
 
-            if(Symbol.TryGetTokenType(c, out var tokenType))
+            if (Symbol.TryGetTokenType(c, out var tokenType))
             {
                 tokens.Add(new Token(tokenType));
                 _cursor.Advance();

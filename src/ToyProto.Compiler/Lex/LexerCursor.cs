@@ -5,8 +5,8 @@ namespace ToyProto.Compiler.Lex;
 
 interface ILexerCursor
 {
-    int Position {get;}
-    bool IsAtEnd {get;}
+    int Position { get; }
+    bool IsAtEnd { get; }
 
     char Peek(int offset = 0);
     bool TryPeekAhead(int offset, out char c);
@@ -36,35 +36,35 @@ class LexerCursor : ILexerCursor
         _len = input.Length;
         _pos = 0;
     }
-    
+
     public char Peek(int offset = 0)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(offset);
 
         var index = _pos + offset;
-        if(index >= _len)
+        if (index >= _len)
             throw new InvalidEnumArgumentException("Cannot peek past end of file");
-        
+
         return _input[index];
     }
 
     public bool TryPeekAhead(int offset, out char c)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(offset);
-        
+
         c = '\0';
 
         var index = _pos + offset;
-        if(index >= _len)
+        if (index >= _len)
             return false;
-        
+
         c = _input[index];
         return true;
     }
-    
+
     public void Advance()
     {
-        if(IsAtEnd)
+        if (IsAtEnd)
             throw new InvalidOperationException("Cannot advance, Eof reached!");
         _pos++;
     }
@@ -73,15 +73,15 @@ class LexerCursor : ILexerCursor
     {
         ArgumentNullException.ThrowIfNull(advanceCondition);
 
-        while(!IsAtEnd && advanceCondition(Peek()))
+        while (!IsAtEnd && advanceCondition(Peek()))
             Advance();
     }
 
     public bool Match(char expected)
     {
-        if(IsAtEnd || Peek() != expected)
+        if (IsAtEnd || Peek() != expected)
             return false;
-        
+
         Advance();
         return true;
     }
@@ -90,7 +90,7 @@ class LexerCursor : ILexerCursor
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(expected);
 
-        if(_pos + expected.Length > _len)
+        if (_pos + expected.Length > _len)
             return false;
 
         if (!_input.AsSpan(_pos, expected.Length).SequenceEqual(expected.AsSpan()))
@@ -107,10 +107,10 @@ class LexerCursor : ILexerCursor
 
     public string Slice(int start, int end)
     {
-        if(start < 0 || start > _len)
+        if (start < 0 || start > _len)
             throw new ArgumentOutOfRangeException(nameof(start));
 
-        if(end < start || end > _len)
+        if (end < start || end > _len)
             throw new ArgumentOutOfRangeException(nameof(end));
 
         return _input[start..end];
