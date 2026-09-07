@@ -4,14 +4,14 @@ namespace ToyProto.Compiler.Lex;
 
 public interface ILexer
 {
-    List<Token> Tokenize(string input);
+    IReadOnlyList<Token> Tokenize(string input);
 }
 
 public class Lexer : ILexer
 {
     private LexerCursor _cursor = default!;
 
-    public List<Token> Tokenize(string input)
+    public IReadOnlyList<Token> Tokenize(string input)
     {
         _cursor = new LexerCursor(input);
         return TokenizeInternal();

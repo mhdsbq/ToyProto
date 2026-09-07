@@ -1,4 +1,5 @@
 using System.CommandLine;
+using ToyProto.Compiler;
 
 namespace ToyProto.Cli.Commands;
 
@@ -36,5 +37,9 @@ internal static class CompileCommand
         }
 
         Console.WriteLine($"[DEBUG] Compiling proto file: {protoFile.FullName} to output directory: {outputDir.FullName}");
+
+        var input = File.ReadAllText(protoFile.FullName);
+        var compiler = new ProtoCompiler();
+        compiler.Compile(input);
     }
 }

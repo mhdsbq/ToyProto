@@ -1,29 +1,41 @@
-﻿using ToyProto.Compiler.Lex;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using ToyProto.Compiler.Ast;
+using ToyProto.Compiler.Lex;
+using ToyProto.Compiler.Parse;
 
 namespace ToyProto.Compiler;
 
 public class ProtoCompiler
 {
-    public CompilationResult Compile(ProtoFile protoFile)
+    public CompilationResult Compile(string input)
     {
         var lexer = new Lexer();
-        // var tokens = Lexer.Tokenize(protoFile.Content);
-        // var ast = Parser.Parse(tokens);
+        var parser = new Parser();
+
+        var tokens = lexer.Tokenize(input);
+
+        // DEBUG LOG
+        Console.WriteLine("\n[DEBUG] ## Tokens: ");
+        foreach (var token in tokens)
+            Console.WriteLine($"[DEBUG] {token.Type,-15} - {token.Value}");
+
+        var ast = parser.Parse(tokens);
+
+        // DEBUG LOG
+        Console.WriteLine("\n[DEBUG] ## AST: ");
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new AstNodeConverter() }
+        };
+
+        Console.WriteLine(JsonSerializer.Serialize(ast, options));
+
         // var csharpCode = CodeGenerator.Generate(ast);
-        // return new CompilationResult(true, csharpCode, null);
-        throw new NotImplementedException("The Compile method is not implemented yet.");
+        return new CompilationResult(true, string.Empty, null);
     }
 }
 
-public class CompilationResult
-{
-    public bool Success { get; set; }
-    public string? Output { get; set; }
-    public string? ErrorMessage { get; set; }
-}
-
-public class ProtoFile
-{
-    public required string FilePath { get; set; }
-    public required string Content { get; set; }
-}
+public record CompilationResult(bool Success, string Output, string? Error);
