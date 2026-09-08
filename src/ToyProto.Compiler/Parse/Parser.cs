@@ -22,18 +22,18 @@ internal class Parser : IParser
     private ProtoFile ParseInternal()
     {
         var syntax = ParseSyntax();
-        var declarations = new List<AstNode>();
+        var messages = new List<MessageDeclaration>();
 
         while (!_cursor.IsAtEnd)
         {
             if (_cursor.Match(TokenType.Message))
             {
-                declarations.Add(ParseMessage());
+                messages.Add(ParseMessage());
                 continue;
             }
         }
 
-        return new ProtoFile(syntax, declarations);
+        return new ProtoFile(syntax, messages);
     }
 
     private string? ParseSyntax()

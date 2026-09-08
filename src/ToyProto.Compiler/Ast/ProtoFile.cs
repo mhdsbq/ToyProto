@@ -1,6 +1,8 @@
+using ToyProto.Compiler.Ast.Declarations;
+
 namespace ToyProto.Compiler.Ast;
 
 internal record ProtoFile(
     string? Syntax,
-    IReadOnlyList<AstNode> Declarations
+    IReadOnlyList<MessageDeclaration> Messages
 ) : AstNode;
