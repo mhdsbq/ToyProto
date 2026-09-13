@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using ToyProto.Compiler.Ast;
+using ToyProto.Compiler.CodeGen;
 using ToyProto.Compiler.Lex;
 using ToyProto.Compiler.Parse;
 
@@ -12,6 +13,7 @@ public class ProtoCompiler
     {
         var lexer = new Lexer();
         var parser = new Parser();
+        var codeGenerator = new CSharpCodeGenerator();
 
         var tokens = lexer.Tokenize(input);
 
@@ -33,7 +35,12 @@ public class ProtoCompiler
 
         Console.WriteLine(JsonSerializer.Serialize(ast, options));
 
-        // var csharpCode = CodeGenerator.Generate(ast);
+        var csharpCode = codeGenerator.GenerateCode(ast);
+
+        // DEBUG LOG
+        Console.WriteLine("\n [DEBUG] ## CODE GEN: ");
+        Console.WriteLine(csharpCode);
+
         return new CompilationResult(true, string.Empty, null);
     }
 }
